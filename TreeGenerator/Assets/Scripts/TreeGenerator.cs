@@ -102,7 +102,7 @@ public class TreeGenerator : MonoBehaviour
         GameObject root = Instantiate(branch, transform.position,
             new Quaternion(0, 0, 0, 0), branchesPool.transform);
 
-        root.transform.localScale = new Vector3(thickness, height, thickness);
+        root.transform.localScale = new Vector3(thickness, height, thickness);        
 
         return root;
 
