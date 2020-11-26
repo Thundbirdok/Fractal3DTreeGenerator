@@ -167,7 +167,11 @@ MonoBehaviour:
   height: 5
   thickness: 1
   branchesNumber: 3
+  branchAngle: 60
+  branchScaler: 0.5
+  rotateLeafs: 0
   leafSize: 0.3
+  leafScaler: 2
   branch: {fileID: 7362357193580814216, guid: 9b5abf75953583f4d90d5c5fe13aa896, type: 3}
   leaf: {fileID: 2978220892936292571, guid: e108341a7b1fe1345a94b914a17793fb, type: 3}
 --- !u!1 &705507993
