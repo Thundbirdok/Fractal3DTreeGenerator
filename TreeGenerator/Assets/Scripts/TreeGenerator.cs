@@ -59,26 +59,17 @@ public class TreeGenerator : MonoBehaviour
         if (isChanged)
         {
 
-            if (Application.IsPlaying(gameObject))
-            {
+#if UNITY_EDITOR 
 
-                Debug.Log("Pools Destroyed in play");
-                Destroy(branchesPool);
-                Destroy(leafsPool);
+            DestroyImmediate(branchesPool);
+            DestroyImmediate(leafsPool);
 
-            }
-            else
-            {
-
-#if UNITY_EDITOR
-
-                Debug.Log("Pools Destroyed in editor");
-                DestroyImmediate(branchesPool);
-                DestroyImmediate(leafsPool);
+#else
+               
+            Destroy(branchesPool);
+            Destroy(leafsPool);
 
 #endif
-
-            }
 
             GenerateTree();
 

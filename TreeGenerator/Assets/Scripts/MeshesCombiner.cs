@@ -15,19 +15,6 @@ public class MeshesCombiner
         MeshFilter[] meshFilters = obj.GetComponentsInChildren<MeshFilter>();
         CombineInstance[] combine = new CombineInstance[meshFilters.Length - 1];
 
-        if (Application.IsPlaying(obj))
-        {
-
-            Debug.Log("Combine in Game");
-
-        }
-        else
-        {
-
-            Debug.Log("Combine in Editor");
-
-        }
-
         //From 1 cause 0 is parent
         for (int i = 1; i < meshFilters.Length; ++i)
         {
@@ -35,22 +22,15 @@ public class MeshesCombiner
             combine[i - 1].mesh = meshFilters[i].sharedMesh;
             combine[i - 1].transform = meshFilters[i].transform.localToWorldMatrix;
 
-            if (Application.IsPlaying(obj))
-            {
-
-                Object.Destroy(meshFilters[i].gameObject);                
-
-            }
-            else
-            {
-
 #if UNITY_EDITOR
 
-                Object.DestroyImmediate(meshFilters[i].gameObject);
+            Object.DestroyImmediate(meshFilters[i].gameObject.transform.parent.gameObject);
+
+#else
+
+            Object.Destroy(meshFilters[i].gameObject.transform.parent.gameObject);
 
 #endif
-
-            }            
 
         }
 
