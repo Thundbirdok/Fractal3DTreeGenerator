@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteAlways]
 public class TreeGenerator : MonoBehaviour
 {
 
@@ -24,7 +25,7 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField]
     private bool rotateLeafs = false;
     [SerializeField]
-    private float leafSize = 0.3f;    
+    private float leafSize = 0.3f;
     [SerializeField]
     private float leafScaler = 2f;
 
@@ -35,16 +36,19 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField]
     private GameObject leaf = null;
 
+    [SerializeField]
+    private bool isChanged = true;
+
+    [SerializeField, HideInInspector]
     private GameObject branchesPool;
+    [SerializeField, HideInInspector]
     private GameObject leafsPool;
 
     private float degreesBetweenBranches;
 
     // Start is called before the first frame update
     void Start()
-    {        
-
-        GenerateTree();
+    {
 
     }
 
@@ -52,7 +56,35 @@ public class TreeGenerator : MonoBehaviour
     void Update()
     {
 
-        
+        if (isChanged)
+        {
+
+            if (Application.IsPlaying(gameObject))
+            {
+
+                Debug.Log("Pools Destroyed in play");
+                Destroy(branchesPool);
+                Destroy(leafsPool);
+
+            }
+            else
+            {
+
+#if UNITY_EDITOR
+
+                Debug.Log("Pools Destroyed in editor");
+                DestroyImmediate(branchesPool);
+                DestroyImmediate(leafsPool);
+
+#endif
+
+            }
+
+            GenerateTree();
+
+            isChanged = false;
+
+        }
 
     }
 
@@ -62,11 +94,11 @@ public class TreeGenerator : MonoBehaviour
         degreesBetweenBranches = 360 / branchesNumber;
 
         CreatePool(out branchesPool, branch, "Branches Pool");
-        CreatePool(out leafsPool, leaf, "Leafs Pool");        
+        CreatePool(out leafsPool, leaf, "Leafs Pool");
 
-        Queue<GameObject> branches = new Queue<GameObject>();        
-        
-        branches.Enqueue(CreateRoot());                
+        Queue<GameObject> branches = new Queue<GameObject>();
+
+        branches.Enqueue(CreateRoot());
 
         while (branches.Count != 0)
         {
@@ -77,21 +109,21 @@ public class TreeGenerator : MonoBehaviour
 
             if (branchScale.y > leafSize)
             {
-                       
+
                 foreach (var obj in CreateBranch(parentBranch, branchScale))
                 {
 
                     branches.Enqueue(obj);
 
-                }                
+                }
 
             }
 
-            CreateLeaf(parentBranch);            
+            CreateLeaf(parentBranch);
 
         }
 
-        MeshesCombiner.CombineMeshes(branchesPool);        
+        MeshesCombiner.CombineMeshes(branchesPool);
         MeshesCombiner.CombineMeshes(leafsPool);
 
     }
@@ -102,7 +134,7 @@ public class TreeGenerator : MonoBehaviour
         GameObject root = Instantiate(branch, transform.position,
             new Quaternion(0, 0, 0, 0), branchesPool.transform);
 
-        root.transform.localScale = new Vector3(thickness, height, thickness);        
+        root.transform.localScale = new Vector3(thickness, height, thickness);
 
         return root;
 
@@ -114,11 +146,11 @@ public class TreeGenerator : MonoBehaviour
         for (int i = 0; i < branchesNumber; ++i)
         {
 
-            Vector3 branchPosition = parentBranch.transform.localPosition 
+            Vector3 branchPosition = parentBranch.transform.localPosition
                 + parentBranch.transform.up * branchScale.y;
 
-            Quaternion leafRotation = parentBranch.transform.localRotation 
-                * Quaternion.Euler(branchAngle, degreesBetweenBranches * i, 0);           
+            Quaternion leafRotation = parentBranch.transform.localRotation
+                * Quaternion.Euler(branchAngle, degreesBetweenBranches * i, 0);
 
             GameObject branchClone = Instantiate(branch,
                         branchPosition, leafRotation,
@@ -172,6 +204,6 @@ public class TreeGenerator : MonoBehaviour
         MeshRenderer bpMeshRenderer = pool.AddComponent<MeshRenderer>();
         bpMeshRenderer.material = type.GetComponentInChildren<MeshRenderer>().sharedMaterial;
 
-    }    
+    }
 
 }
