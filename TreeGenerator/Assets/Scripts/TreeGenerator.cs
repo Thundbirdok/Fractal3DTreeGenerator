@@ -8,16 +8,16 @@ public class TreeGenerator : MonoBehaviour
 {
 
     [Header("Branch Settings")]
-
+    
     [SerializeField]
     private float height = 5;
     [SerializeField]
     private float thickness = 0.5f;
     [SerializeField]
-    private int branchesNumber = 3;
+    private uint branchesNumber = 3;
     [SerializeField]
     private float branchAngle = 45;
-    [SerializeField]
+    [SerializeField, Range(0.1f, 0.9f)]
     private float branchScaler = 0.5f;
 
     [Header("Leaf Settings")]
@@ -36,9 +36,6 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField]
     private GameObject leaf = null;
 
-    [SerializeField]
-    private bool isChanged = true;
-
     [SerializeField, HideInInspector]
     private GameObject branchesPool;
     [SerializeField, HideInInspector]
@@ -56,36 +53,15 @@ public class TreeGenerator : MonoBehaviour
     void Update()
     {
 
-        if (isChanged)
-        {
-
-#if UNITY_EDITOR 
-
-            DestroyImmediate(branchesPool);
-            DestroyImmediate(leafsPool);
-
-#else
-               
-            Destroy(branchesPool);
-            Destroy(leafsPool);
-
-#endif
-
-            GenerateTree();
-
-            isChanged = false;
-
-        }
-
     }
 
-    private void GenerateTree()
+    public void GenerateTree()
     {
 
         degreesBetweenBranches = 360 / branchesNumber;
 
-        CreatePool(out branchesPool, branch, "Branches Pool");
-        CreatePool(out leafsPool, leaf, "Leafs Pool");
+        CreatePool(ref branchesPool, branch, "Branches Pool");
+        CreatePool(ref leafsPool, leaf, "Leafs Pool");
 
         Queue<GameObject> branches = new Queue<GameObject>();
 
@@ -185,8 +161,18 @@ public class TreeGenerator : MonoBehaviour
 
     }
 
-    private void CreatePool(out GameObject pool, GameObject type, string name)
+    private void CreatePool(ref GameObject pool, GameObject type, string name)
     {
+
+#if UNITY_EDITOR
+
+        DestroyImmediate(pool);        
+
+#else
+               
+            Destroy(pool);            
+
+#endif
 
         pool = new GameObject(name, typeof(MeshFilter));
 
