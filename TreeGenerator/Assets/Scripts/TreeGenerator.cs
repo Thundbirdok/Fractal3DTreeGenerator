@@ -7,8 +7,19 @@ using UnityEngine;
 public class TreeGenerator : MonoBehaviour
 {
 
-    [Header("Branch Settings")]
-    
+    public enum GenerationType
+    {
+
+        Cross,
+        Y
+
+    }
+
+    [Header("Branch Settings")]    
+
+    [SerializeField]
+    private GenerationType type = GenerationType.Cross;
+
     [SerializeField]
     private float height = 5;
     [SerializeField]
@@ -39,7 +50,7 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField, HideInInspector]
     private GameObject branchesPool;
     [SerializeField, HideInInspector]
-    private GameObject leafsPool;
+    private GameObject leafsPool;    
 
     private float degreesBetweenBranches;
 
@@ -85,8 +96,21 @@ public class TreeGenerator : MonoBehaviour
                 }
 
             }
+            else if (type == GenerationType.Y)
+            {
 
-            CreateLeaf(parentBranch);
+                CreateLeaf(parentBranch);
+
+                continue;
+
+            }
+
+            if (type == GenerationType.Cross)
+            {
+             
+                CreateLeaf(parentBranch);
+
+            }
 
         }
 
@@ -113,8 +137,32 @@ public class TreeGenerator : MonoBehaviour
         for (int i = 0; i < branchesNumber; ++i)
         {
 
-            Vector3 branchPosition = parentBranch.transform.localPosition
-                + parentBranch.transform.up * branchScale.y;
+            Vector3 branchPosition;
+
+            switch (type)
+            {
+
+                case GenerationType.Cross:
+
+                    branchPosition = parentBranch.transform.localPosition
+                    + parentBranch.transform.up * branchScale.y;
+
+                    break;
+
+                case GenerationType.Y:
+
+                    branchPosition = parentBranch.transform.localPosition
+                    + parentBranch.transform.up * parentBranch.transform.localScale.y;
+
+                    break;
+
+                default:
+
+                    branchPosition = Vector3.zero;
+
+                    break;
+
+            }
 
             Quaternion leafRotation = parentBranch.transform.localRotation
                 * Quaternion.Euler(branchAngle, degreesBetweenBranches * i, 0);
@@ -124,6 +172,7 @@ public class TreeGenerator : MonoBehaviour
                         branchesPool.transform);
 
             branchClone.transform.localScale = branchScale;
+            branchClone.transform.position += branchClone.transform.forward * branchScale.x / 2;
 
             yield return branchClone;
 
@@ -166,7 +215,7 @@ public class TreeGenerator : MonoBehaviour
 
 #if UNITY_EDITOR
 
-        DestroyImmediate(pool);        
+        DestroyImmediate(pool);
 
 #else
                
