@@ -25,7 +25,9 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField]
     private float thickness = 0.5f;
     [SerializeField]
-    private uint branchesNumber = 3;
+    private uint branchNumberOnLevel = 3;
+    [SerializeField]
+    private uint levelNumber = 2;
     [SerializeField]
     private float branchAngle = 45;
     [SerializeField, Range(0.1f, 0.9f)]
@@ -36,7 +38,7 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField]
     private bool rotateLeafs = false;
     [SerializeField]
-    private float leafSize = 0.3f;
+    private float endSize = 0.3f;
     [SerializeField]
     private float leafScaler = 2f;
 
@@ -69,7 +71,7 @@ public class TreeGenerator : MonoBehaviour
     public void GenerateTree()
     {
 
-        degreesBetweenBranches = 360 / branchesNumber;
+        degreesBetweenBranches = 360 / branchNumberOnLevel;
 
         CreatePool(ref branchesPool, branch, "Branches Pool");
         CreatePool(ref leafsPool, leaf, "Leafs Pool");
@@ -85,7 +87,7 @@ public class TreeGenerator : MonoBehaviour
 
             Vector3 branchScale = parentBranch.transform.localScale * branchScaler;
 
-            if (branchScale.y > leafSize)
+            if (branchScale.y > endSize)
             {
 
                 foreach (var obj in CreateBranch(parentBranch, branchScale))
@@ -134,47 +136,52 @@ public class TreeGenerator : MonoBehaviour
     private IEnumerable<GameObject> CreateBranch(GameObject parentBranch, Vector3 branchScale)
     {
 
-        for (int i = 0; i < branchesNumber; ++i)
+        for (int i = 1; i <= levelNumber; ++i)
         {
 
-            Vector3 branchPosition;
-
-            switch (type)
+            for (int j = 0; j < branchNumberOnLevel; ++j)
             {
 
-                case GenerationType.Cross:
+                Vector3 branchPosition;
 
-                    branchPosition = parentBranch.transform.localPosition
-                    + parentBranch.transform.up * branchScale.y;
+                switch (type)
+                {
 
-                    break;
+                    case GenerationType.Cross:
 
-                case GenerationType.Y:
+                        branchPosition = parentBranch.transform.localPosition
+                        + parentBranch.transform.up * parentBranch.transform.localScale.y * ((float)i / (levelNumber + 1));
 
-                    branchPosition = parentBranch.transform.localPosition
-                    + parentBranch.transform.up * parentBranch.transform.localScale.y;
+                        break;
 
-                    break;
+                    case GenerationType.Y:
 
-                default:
+                        branchPosition = parentBranch.transform.localPosition
+                        + parentBranch.transform.up * parentBranch.transform.localScale.y * ((float)i / levelNumber);
 
-                    branchPosition = Vector3.zero;
+                        break;
 
-                    break;
+                    default:
+
+                        branchPosition = Vector3.zero;
+
+                        break;
+
+                }
+
+                Quaternion leafRotation = parentBranch.transform.localRotation
+                    * Quaternion.Euler(branchAngle, degreesBetweenBranches * j, 0);
+
+                GameObject branchClone = Instantiate(branch,
+                            branchPosition, leafRotation,
+                            branchesPool.transform);
+
+                branchClone.transform.localScale = branchScale / i;
+                branchClone.transform.position += branchClone.transform.forward * branchScale.x / 2;
+
+                yield return branchClone;
 
             }
-
-            Quaternion leafRotation = parentBranch.transform.localRotation
-                * Quaternion.Euler(branchAngle, degreesBetweenBranches * i, 0);
-
-            GameObject branchClone = Instantiate(branch,
-                        branchPosition, leafRotation,
-                        branchesPool.transform);
-
-            branchClone.transform.localScale = branchScale;
-            branchClone.transform.position += branchClone.transform.forward * branchScale.x / 2;
-
-            yield return branchClone;
 
         }
 
