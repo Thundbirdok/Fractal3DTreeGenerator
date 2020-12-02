@@ -116,8 +116,8 @@ public class TreeGenerator : MonoBehaviour
 
         }
 
-        MeshesCombiner.CombineMeshes(branchesPool);
-        MeshesCombiner.CombineMeshes(leafsPool);
+        MeshesCombiner.CombineMeshes(branchesPool.transform, branch);
+        MeshesCombiner.CombineMeshes(leafsPool.transform, leaf);
 
     }
 
@@ -230,12 +230,9 @@ public class TreeGenerator : MonoBehaviour
 
 #endif
 
-        pool = new GameObject(name, typeof(MeshFilter));
+        pool = new GameObject(name);
 
         pool.transform.parent = transform;
-
-        MeshRenderer bpMeshRenderer = pool.AddComponent<MeshRenderer>();
-        bpMeshRenderer.material = type.GetComponentInChildren<MeshRenderer>().sharedMaterial;
 
     }
 
