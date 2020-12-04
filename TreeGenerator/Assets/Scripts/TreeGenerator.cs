@@ -30,8 +30,14 @@ public class TreeGenerator : MonoBehaviour
     private uint levelNumber = 2;
     [SerializeField]
     private float branchAngle = 45;
+    [SerializeField]
+    private float branchesRotationShift = 90;
     [SerializeField, Range(0.1f, 0.9f)]
     private float branchScaler = 0.5f;
+    [SerializeField, Range(0, 1)]
+    private float zBranchShift = 0.7f;
+    [SerializeField, Range(0, 1)]
+    private float yBranchShift = 0.1f;
 
     [Header("Leaf Settings")]
 
@@ -150,14 +156,16 @@ public class TreeGenerator : MonoBehaviour
                     case GenerationType.Cross:
 
                         branchPosition = parentBranch.transform.localPosition
-                        + parentBranch.transform.up * parentBranch.transform.localScale.y * ((float)i / (levelNumber + 1));
+                        + parentBranch.transform.up 
+                        * (parentBranch.transform.localScale.y * ((float)i / (levelNumber + 1)) - branchScale.y * yBranchShift);
 
                         break;
 
                     case GenerationType.Y:
 
                         branchPosition = parentBranch.transform.localPosition
-                        + parentBranch.transform.up * parentBranch.transform.localScale.y * ((float)i / levelNumber);
+                        + parentBranch.transform.up 
+                        * (parentBranch.transform.localScale.y * ((float)i / levelNumber) - branchScale.y * yBranchShift);
 
                         break;
 
@@ -169,15 +177,16 @@ public class TreeGenerator : MonoBehaviour
 
                 }
 
-                Quaternion leafRotation = parentBranch.transform.localRotation
-                    * Quaternion.Euler(branchAngle, degreesBetweenBranches * j, 0);
+                Quaternion branchRotation = parentBranch.transform.localRotation
+                    * Quaternion.Euler(branchAngle, degreesBetweenBranches * j + branchesRotationShift, 0);
 
-                GameObject branchClone = Instantiate(branch,
-                            branchPosition, leafRotation,
+                GameObject branchClone = Instantiate(branch,                            
                             branchesPool.transform);
 
                 branchClone.transform.localScale = branchScale / i;
-                branchClone.transform.position += branchClone.transform.forward * branchScale.x / 2;
+                branchClone.transform.localRotation = Quaternion.Euler(0, branchRotation.eulerAngles.y, 0);
+                branchClone.transform.localPosition = branchPosition + branchClone.transform.forward * branchScale.x * zBranchShift;
+                branchClone.transform.localRotation = branchRotation;                               
 
                 yield return branchClone;
 
