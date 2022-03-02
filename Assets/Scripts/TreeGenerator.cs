@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [ExecuteAlways]
 public class TreeGenerator : MonoBehaviour
 {
-
     public enum GenerationType
     {
-
         Cross,
         Y
-
     }
 
-    [Header("Branch Settings")]    
+    [Header("Branch Settings")]
 
     [SerializeField]
     private GenerationType type = GenerationType.Cross;
@@ -58,25 +54,12 @@ public class TreeGenerator : MonoBehaviour
     [SerializeField, HideInInspector]
     private GameObject branchesPool;
     [SerializeField, HideInInspector]
-    private GameObject leafsPool;    
+    private GameObject leafsPool;
 
     private float degreesBetweenBranches;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     public void GenerateTree()
     {
-
         degreesBetweenBranches = 360 / branchNumberOnLevel;
 
         CreatePool(ref branchesPool, branch, "Branches Pool");
@@ -88,75 +71,49 @@ public class TreeGenerator : MonoBehaviour
 
         while (branches.Count != 0)
         {
-
             GameObject parentBranch = branches.Dequeue();
 
             Vector3 branchScale = parentBranch.transform.localScale * branchScaler;
 
             if (branchScale.y > endSize)
             {
-
                 foreach (var obj in CreateBranch(parentBranch, branchScale))
                 {
-
                     branches.Enqueue(obj);
-
                 }
-
-            }
-            else if (type == GenerationType.Y)
-            {
-
-                CreateLeaf(parentBranch);
-
-                continue;
-
             }
 
-            if (type == GenerationType.Cross)
-            {
-             
-                CreateLeaf(parentBranch);
-
-            }
-
+            CreateLeaf(parentBranch);
         }
 
         MeshesCombiner.CombineMeshes(branchesPool.transform, branch);
         MeshesCombiner.CombineMeshes(leafsPool.transform, leaf);
-
     }
 
     private GameObject CreateRoot()
     {
-
         GameObject root = Instantiate(branch, transform.position,
             new Quaternion(0, 0, 0, 0), branchesPool.transform);
 
         root.transform.localScale = new Vector3(thickness, height, thickness);
 
         return root;
-
     }
 
     private IEnumerable<GameObject> CreateBranch(GameObject parentBranch, Vector3 branchScale)
     {
-
         for (int i = 1; i <= levelNumber; ++i)
         {
-
             for (int j = 0; j < branchNumberOnLevel; ++j)
             {
-
                 Vector3 branchPosition;
 
                 switch (type)
                 {
-
                     case GenerationType.Cross:
 
                         branchPosition = parentBranch.transform.localPosition
-                        + parentBranch.transform.up 
+                        + parentBranch.transform.up
                         * (parentBranch.transform.localScale.y * ((float)i / (levelNumber + 1)) - branchScale.y * yBranchShift);
 
                         break;
@@ -164,7 +121,7 @@ public class TreeGenerator : MonoBehaviour
                     case GenerationType.Y:
 
                         branchPosition = parentBranch.transform.localPosition
-                        + parentBranch.transform.up 
+                        + parentBranch.transform.up
                         * (parentBranch.transform.localScale.y * ((float)i / levelNumber) - branchScale.y * yBranchShift);
 
                         break;
@@ -174,31 +131,26 @@ public class TreeGenerator : MonoBehaviour
                         branchPosition = Vector3.zero;
 
                         break;
-
                 }
 
                 Quaternion branchRotation = parentBranch.transform.localRotation
                     * Quaternion.Euler(branchAngle, degreesBetweenBranches * j + branchesRotationShift, 0);
 
-                GameObject branchClone = Instantiate(branch,                            
+                GameObject branchClone = Instantiate(branch,
                             branchesPool.transform);
 
                 branchClone.transform.localScale = branchScale / i;
                 branchClone.transform.localRotation = Quaternion.Euler(0, branchRotation.eulerAngles.y, 0);
                 branchClone.transform.localPosition = branchPosition + branchClone.transform.forward * branchScale.x * zBranchShift;
-                branchClone.transform.localRotation = branchRotation;                               
+                branchClone.transform.localRotation = branchRotation;
 
                 yield return branchClone;
-
             }
-
         }
-
     }
 
     private void CreateLeaf(GameObject parentBranch)
     {
-
         Vector3 leafPosition = parentBranch.transform.localPosition
                 + parentBranch.transform.up * parentBranch.transform.localScale.y;
 
@@ -206,15 +158,11 @@ public class TreeGenerator : MonoBehaviour
 
         if (rotateLeafs)
         {
-
             leafRotation = parentBranch.transform.localRotation;
-
         }
         else
         {
-
             leafRotation = new Quaternion(0, 0, 0, 0);
-
         }
 
         GameObject leafClone = Instantiate(leaf, leafPosition, leafRotation,
@@ -223,26 +171,35 @@ public class TreeGenerator : MonoBehaviour
         float leafScale = parentBranch.transform.localScale.x * leafScaler;
 
         leafClone.transform.localScale = new Vector3(leafScale, leafScale, leafScale);
-
     }
 
     private void CreatePool(ref GameObject pool, GameObject type, string name)
     {
 
+        if (Application.isEditor)
+        {
+
 #if UNITY_EDITOR
 
-        DestroyImmediate(pool);
-
-#else
-               
-            Destroy(pool);            
+            if (EditorApplication.isPlaying)
+            {
+                Destroy(pool);
+            }
+            else
+            {
+                DestroyImmediate(pool);
+            }
 
 #endif
+
+        }
+        else
+        {
+            Destroy(pool);
+        }
 
         pool = new GameObject(name);
 
         pool.transform.parent = transform;
-
     }
-
 }
